@@ -24,8 +24,14 @@ export LANG=C.UTF-8
 # from being split across buffer boundaries, which triggers "blob data" in journald.
 export PYTHONUNBUFFERED=1
 
+if [ -z "$JIRA_PROJECTS" ]; then
+    echo "❌ Error: JIRA_PROJECTS environment variable is not set."
+    echo "Please define it in your .env file (e.g., JIRA_PROJECTS=\"PROJECT1,PROJECT2\")."
+    exit 1
+fi
+
 time python3 jira_translator.py \
-    --projects PROJECT1,PROJECT2 \
+    --projects "$JIRA_PROJECTS" \
     --no-confirm --full-ticket
 EXIT_CODE=$?
 

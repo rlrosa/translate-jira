@@ -29,6 +29,7 @@ Open `.env` and fill in:
 - `JIRA_DOMAIN=` (e.g. `example.atlassian.net`)
 - `JIRA_EMAIL=`
 - `JIRA_API_TOKEN=`
+- `JIRA_PROJECTS=` (e.g. `PROJECT1,PROJECT2`)
 
 *(Optional)* To translate custom fields, configure `config.json`:
 ```bash
@@ -39,7 +40,7 @@ Edit `config.json` to map any specific Custom Field IDs you want to translate (e
 ### 4. Running the Script
 Run the script to automatically search and translate recently updated tickets:
 ```bash
-python3 jira_translator.py --projects PROJECT1,PROJECT2 --no-confirm
+./run_translator.sh
 ```
 
 ---
