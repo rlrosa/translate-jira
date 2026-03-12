@@ -14,7 +14,8 @@ __version__ = "3.9.0"
 # Your Jira server domain
 JIRA_DOMAIN = os.getenv("JIRA_DOMAIN", "example.atlassian.net")
 # Identifier to mark and timestamp translations
-TRANSLATION_ID_PREFIX = f"TR4NSL4T3D-v{__version__}"
+TRANSLATION_ID_PREFIX_BASE = "TR4NSL4T3D-v"
+TRANSLATION_ID_PREFIX = f"{TRANSLATION_ID_PREFIX_BASE}{__version__}"
 # The title for the expand macro in Jira
 EXPAND_TITLE = "Translation / 翻译"
 OLD_EXPAND_TITLE = "Translation" # For backwards compatibility
@@ -332,13 +333,15 @@ def process_field(field_name, adf_nodes, updated_at, verbose=False, re_run_old_t
 
     # Case 2: A translation block exists
     translation_content_text = "\n".join(extract_text_from_adf(translation_node.get("content", [])))
-    match = re.search(f"TR4NSL4T3D-v([\\d\\.]+)-(\\d{{4}}-\\d{{2}}-\\d{{2}}T\\d{{2}}:\\d{{2}}:\\d{{2}})UTC", translation_content_text)
+    matches = list(re.finditer(f"{TRANSLATION_ID_PREFIX_BASE}([\\d\\.]+)-(\\d{{4}}-\\d{{2}}-\\d{{2}}T\\d{{2}}:\\d{{2}}:\\d{{2}})UTC", translation_content_text))
 
-    if not match:
+    if not matches:
         print(f"  -> {field_name} has a translation block but no signature. Re-translating.")
         return True, original_adf_nodes, nodes_to_translate
 
-    found_version, translation_timestamp_str = match.groups()
+    # Get the *last* signature parsed (handling cloned tickets with old stale signatures at the top)
+    last_match = matches[-1]
+    found_version, translation_timestamp_str = last_match.groups()
     translation_time = datetime.strptime(translation_timestamp_str, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
 
     if verbose:
