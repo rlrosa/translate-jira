@@ -72,7 +72,7 @@ Skips Ollama entirely and strictly falls back to the local `Helsinki-NLP` transl
 ```bash
 python3 jira_translator.py --projects PROJECT1 --no-confirm --use-remote-only
 ```
-*Make sure to stand up the docker container first via `docker-compose up -d translation-server`.*
+*Make sure to stand up the docker container first via `cd server && docker-compose up -d`.*
 
 ---
 
@@ -124,7 +124,7 @@ Running this via systemd timers is the recommended way to keep your Jira issues 
 
 ## 🔍 Diagnostics & Testing
 
-If you encounter issues, you can run diagnostic tools:
+If you encounter issues, you can run diagnostic tools from the `utils/` directory:
 
 **Test LLM Connection:**
 ```bash
@@ -133,5 +133,10 @@ python3 utils/test_llm.py --host http://localhost:11434 --model qwen2.5:7b
 
 **Test End-to-End Environment:**
 ```bash
-./test_setup.sh
+./utils/test_setup.sh
+```
+
+**Interactive Production Test (Single Ticket):**
+```bash
+./utils/test_production.sh
 ```

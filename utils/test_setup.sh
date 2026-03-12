@@ -3,10 +3,10 @@
 # Navigate to the script's directory
 cd "$(dirname "$0")"
 
-# Load environment variables if the .env file exists
-if [ -f .env ]; then
+# Load environment variables if the .env file exists in the parent directory
+if [ -f ../.env ]; then
   set -a
-  source .env
+  source ../.env
   set +a
 else
   echo "⚠️  No .env file found. Proceeding with system environment variables."
@@ -58,7 +58,7 @@ else
     echo "ℹ️  No GEMINI_API_KEY found. Testing local Ollama connection..."
     echo "    Host: $OLLAMA_HOST"
     echo "    Model: $OLLAMA_MODEL"
-    python3 utils/test_llm.py --host "$OLLAMA_HOST" --model "$OLLAMA_MODEL"
+    python3 test_llm.py --host "$OLLAMA_HOST" --model "$OLLAMA_MODEL"
 fi
 
 echo -e "\n======================================"

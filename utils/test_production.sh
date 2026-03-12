@@ -5,9 +5,9 @@ echo "   🚀 Production Site Tester (Single Ticket)     "
 echo "================================================="
 
 # Load environment variables
-if [ -f .env ]; then
+if [ -f ../.env ]; then
   set -a
-  source .env
+  source ../.env
   set +a
 else
   echo "⚠️  No .env file found. Executing with system variables."
@@ -25,7 +25,7 @@ echo -e "\nRunning translator script in interactive mode against $TICKET_ID..."
 echo -e "You will be prompted before any final revisions are applied.\n"
 
 # Run the python script interactively against the single ticket
-python3 jira_translator.py --ticket_id "$TICKET_ID" --full-ticket
+PYTHONPATH=.. python3 ../jira_translator.py --ticket_id "$TICKET_ID" --full-ticket
 
 EXIT_CODE=$?
 

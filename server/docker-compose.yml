@@ -1,7 +1,7 @@
 services:
   translation-server:
     build:
-      context: ./server
+      context: .
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
@@ -11,7 +11,7 @@ services:
       - WORKERS=${WORKERS:-1}
     volumes:
       # Mounts your local server directory into the container for live updates.
-      - ./server:/app
+      - .:/app
     # restart upon reboot
     restart: unless-stopped
     deploy:
