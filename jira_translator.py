@@ -84,7 +84,7 @@ def strip_brackets_for_translation(text):
     return re.sub(r'\[.*?\]|【.*?】', '', text).strip()
 
 # --- Ollama Translation (New Default) ---
-def translate_text_ollama(text_list, host, model_name):
+def translate_text_ollama(text_list, host, model_name, max_timeout=300):
     """
     Uses an Ollama endpoint to translate text fragments.
     Replicates the logic of processing a numbered list to save round-trips.
@@ -111,6 +111,9 @@ def translate_text_ollama(text_list, host, model_name):
         "Translated List:"
     )
 
+    # Dynamic timeout: base 30s + 0.05s per character in prompt, capped at max_timeout
+    calculated_timeout = min(30.0 + (len(prompt) * 0.05), float(max_timeout))
+
     payload = {
         "model": model_name,
         "prompt": prompt,
@@ -125,7 +128,7 @@ def translate_text_ollama(text_list, host, model_name):
         # Use endpoint /api/generate as seen in test_llm.py
         url = f"{host.rstrip('/')}/api/generate"
         start_time = datetime.now()
-        response = requests.post(url, json=payload, timeout=90)
+        response = requests.post(url, json=payload, timeout=calculated_timeout)
         response.raise_for_status()
         
         data = response.json()
@@ -171,12 +174,12 @@ def translate_text_remote(text_list, server_url):
         raise TranslationError(f"Could not connect to translation server at {server_url}", details=str(e))
 
 # --- Hybrid Wrapper (Ollama -> Fallback to Remote) ---
-def translate_hybrid(text_list, ollama_host, ollama_model, legacy_url):
+def translate_hybrid(text_list, ollama_host, ollama_model, legacy_url, ollama_timeout=300):
     """
     Attempts to use Ollama first. If it fails, falls back to the legacy server.
     """
     try:
-        return translate_text_ollama(text_list, ollama_host, ollama_model)
+        return translate_text_ollama(text_list, ollama_host, ollama_model, ollama_timeout)
     except TranslationError as e:
         print(f"    ⚠️  Ollama Error: {e}")
         print("    ⚠️  Falling back to Legacy Translation Server...")
@@ -572,6 +575,8 @@ def main():
         parser.add_argument("--server-url", default=DEFAULT_TRANSLATION_SERVER_URL, help=f"Legacy translation server URL. Default: {DEFAULT_TRANSLATION_SERVER_URL}")
         parser.add_argument("--ollama-host", default=DEFAULT_OLLAMA_HOST, help=f"Ollama server URL. Default: {DEFAULT_OLLAMA_HOST}")
         parser.add_argument("--ollama-model", default=DEFAULT_OLLAMA_MODEL, help=f"Ollama model name. Default: {DEFAULT_OLLAMA_MODEL}")
+        parser.add_argument("--ollama-timeout", type=int, default=300, help="Max timeout in seconds for Ollama translations. Default: 300")
+        
         
         parser.add_argument("--workers", type=int, default=4, help="Number of parallel workers to process tickets.")
         parser.add_argument("--verbose", action="store_true", help="Enable detailed logging.")
@@ -598,7 +603,7 @@ def main():
             print(f"Using HYBRID translation mode:")
             print(f"  1. Primary: Ollama ({args.ollama_model} @ {args.ollama_host})")
             print(f"  2. Fallback: Legacy Server ({args.server_url})")
-            translate_func = lambda texts: translate_hybrid(texts, args.ollama_host, args.ollama_model, args.server_url)
+            translate_func = lambda texts: translate_hybrid(texts, args.ollama_host, args.ollama_model, args.server_url, args.ollama_timeout)
 
         user_email = args.email or jira_email_env
         jira_api_token = os.getenv("JIRA_API_TOKEN")
