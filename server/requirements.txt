@@ -1,0 +1,6 @@
+Flask
+transformers
+sentencepiece
+requests
+gunicorn
+sacremoses

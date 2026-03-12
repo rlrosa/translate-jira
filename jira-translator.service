@@ -1,0 +1,9 @@
+[Unit]
+Description=Jira Translator Script
+
+[Service]
+Type=oneshot
+ExecStart=/path/to/jira-translator/run_translator.sh
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jira-translator
