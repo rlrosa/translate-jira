@@ -16,7 +16,7 @@ import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # --- Configuration ---
-__version__ = "4.0.0"
+__version__ = "4.1.0"
 # Your Jira server domain
 JIRA_DOMAIN = os.getenv("JIRA_DOMAIN", "example.atlassian.net")
 # Identifier to mark and timestamp translations
@@ -283,8 +283,9 @@ def get_jira_issues(session, ticket_id=None, projects=None):
         response = session.get(url, params=params)
         response.raise_for_status()
         data = response.json()
-        print(f"Found {data.get('total', 0)} issues to process.")
-        return data.get("issues", [])
+        issues_list = data.get("issues", [])
+        print(f"Found {len(issues_list)} issues to process.")
+        return issues_list
     except requests.exceptions.RequestException as e:
         raise TranslationError("Failed to fetch Jira issues.", details=str(e))
 
