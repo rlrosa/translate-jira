@@ -16,7 +16,7 @@ import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # --- Configuration ---
-__version__ = "3.9.0"
+__version__ = "4.0.0"
 # Your Jira server domain
 JIRA_DOMAIN = os.getenv("JIRA_DOMAIN", "example.atlassian.net")
 # Identifier to mark and timestamp translations
