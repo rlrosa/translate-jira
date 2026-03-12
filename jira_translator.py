@@ -5,6 +5,12 @@ import sys
 import copy
 import json
 import traceback
+import warnings
+from dotenv import load_dotenv
+
+# Load environment variables from .env file before anything else
+load_dotenv()
+
 from datetime import datetime, timedelta, timezone
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -46,7 +52,9 @@ DEFAULT_OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
 
 # --- Dynamic Imports for Optional Libraries ---
 try:
-    import google.generativeai as genai
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=FutureWarning)
+        import google.generativeai as genai
 except ImportError:
     genai = None
 
@@ -613,6 +621,14 @@ def main():
         session = requests.Session()
         session.auth = (user_email, jira_api_token)
         session.headers.update({"Accept": "application/json", "Content-Type": "application/json"})
+
+        # Verify authentication before fetching issues since search queries often fail silently (return 0 issues) on bad auth
+        auth_check_url = f"https://{JIRA_DOMAIN}/rest/api/3/myself"
+        try:
+            auth_response = session.get(auth_check_url, timeout=15)
+            auth_response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise TranslationError(f"Jira Authentication Failed! Please verify JIRA_EMAIL and JIRA_API_TOKEN in your .env", details=str(e))
 
         issues = get_jira_issues(session, args.ticket_id, args.projects)
         if not issues:
