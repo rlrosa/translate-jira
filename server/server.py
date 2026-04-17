@@ -148,12 +148,18 @@ def health_check():
 
 def is_english(text):
     """A simple heuristic to detect if text is primarily English."""
-    # This is a very basic check. For more accuracy, a library like 'langdetect' could be used.
-    # We assume if it has Chinese characters, it's not English.
     import re
-    if re.search("[\u4e00-\u9fff]", text):
+    if not text:
         return False
-    return True
+
+    en_chars = len(re.findall(r"[a-zA-Z]", text))
+    cn_chars = len(re.findall(r"[\u4e00-\u9fff]", text))
+
+    # If no English or Chinese characters, fallback to False
+    if en_chars == 0 and cn_chars == 0:
+        return False
+
+    return en_chars > cn_chars
 
 # This ensures the code only runs when started by a WSGI server like Gunicorn
 if __name__ != '__main__':
