@@ -16,7 +16,7 @@ import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # --- Configuration ---
-__version__ = "4.1.0"
+__version__ = "4.1.1"
 # Your Jira server domain
 JIRA_DOMAIN = os.getenv("JIRA_DOMAIN", "example.atlassian.net")
 # Identifier to mark and timestamp translations
@@ -79,10 +79,15 @@ def is_english(text):
     """A simple heuristic to detect if text is primarily English."""
     if not text:
         return False
-    # This is a very basic check. We assume if it has Chinese characters, it's not primarily English.
-    if re.search("[\u4e00-\u9fff]", text):
+
+    en_chars = len(re.findall(r"[a-zA-Z]", text))
+    cn_chars = len(re.findall(r"[\u4e00-\u9fff]", text))
+
+    # If no English or Chinese characters, fallback to False
+    if en_chars == 0 and cn_chars == 0:
         return False
-    return True
+
+    return en_chars > cn_chars
 
 def strip_brackets_for_translation(text):
     """Removes content within square [] or corner 【】 brackets for translation."""
